@@ -1,1 +1,1 @@
-# jqc
+一个模拟JQuery的框架，暂时命名为jqc，取JQuery copy之意。
