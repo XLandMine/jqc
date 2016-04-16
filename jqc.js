@@ -79,6 +79,23 @@ jqc.extend({
 	}
 });
 
+//查询dom类工具
+jqc.extend({
+	selectChild:function(dom,index){
+		var i = 0, j = 0, childNodes = dom.childNodes,
+			index = index || 0;
+		for (var i = 0; i < childNodes.length; i++) {
+			if ( childNodes[i].nodeType === 1 ) {
+				if ( index == j++ ) {
+					return childNodes[i];
+				}
+			}
+		}
+	},
+	firstChild:function (dom){
+		return selector(dom,0);	
+	}
+});
 
 //判断类型模块
 jqc.extend({
@@ -113,11 +130,13 @@ jqc.fn.extend({
 	//将this当子元素添加到传入对象上
 	appendTo:function(selector){
 		var i = 0,context = jqc(selector),arr = [],
+			cLen = context.length,
+			tLen = this.length,
 			j,node;
-		for (; i < context.length; i++) {
-			for ( j = 0; j < this.length; j++) {
+		for (; i < cLen; i++) {
+			for ( j = 0; j < tLen; j++) {
 				//如果外循环不是最后一次循环则将节点深克隆一份
-				node = i < context.length - 1 ? this[j].cloneNode(true) : this[j];
+				node = i < cLen - 1 ? this[j].cloneNode(true) : this[j];
 				// 将节点保存在arr中
 				arr.push( node );
 				// 将节点当子元素添加到上下文节点中
@@ -132,14 +151,46 @@ jqc.fn.extend({
 		jqc(selector).appendTo(this);
 		return this;
 	},
+	prependTo:function (selector){
+		var i = 0,
+			context = jqc(selector),
+			cLen = context.length,
+			tLen = this.length,
+			arr = [],
+			j,node;
+		for (; i < cLen; i++) {
+			for ( j = 0; j < tLen; j++) {
+				//如果外循环不是最后一次循环则将节点深克隆一份
+				node = i < cLen - 1 ? this[j].cloneNode(true) : this[j];
+				// 将节点保存在arr中
+				arr.push( node );
+				// 将节点当子元素添加到上下文节点第一个元素之前
+				context[i].insertBefore( node , jqc.firstChild(context[i]) );
+			}
+		}
+		//将所有子节点保存在数组中以jqc对象返回
+		return jqc(arr);
+	},
+	prepend:function(selector){
+		jqc(selector).prependTo(this);
+		return this;
+	},
 	//删除当前jqc对象中的所有dom元素
 	remove:function(){
-		var arr = [];
 		this.each(function(){
 			arr.push( this.parentNode.removeChild( this ) );
 		})
 		//返回删除的jqc对象
-		return jqc(arr);
+		return this;
+	}
+})
+
+//事件模块
+jqc.fn.extend({
+	click:function(fn){
+		jqc.each(this,function(){
+			this.onclick = fn;
+		});
 	}
 })
 
@@ -233,31 +284,24 @@ var select = (function(){
 		var results = results || [],
 			node;
 		node = document.getElementById(id);
-		if (node) {
-			results.push.call(results,node);
+		if ( node ) {
+			//判断node是否为空，不为空才加入results数组
+			results.push.call( results , node );
 		}
 		return results; 
 	}
 	//根据tag获取节点
 	function getTagName( tagName, context, results ){
-		var results = results || [],
-			node;
-		node = document.getElementsByTagName(tagName);
-		if (node) {
-			results.push.apply(results,node);
-		}
+		var results = results || [];
+		results.push.apply(results,document.getElementsByTagName(tagName));
 		return results; 
 	}
 	//根据class获取节点
 	function getClassName( className, context, results ){
-		var results = results || [],
-			node;
+		var results = results || [];
 		if (support.getElementsByClassName) {
 			//getElementsByClassName方法是能用则直接使用
-			node = document.getElementsByClassName(className);
-			if (node) {
-				results.push.apply(results,node);
-			}
+			results.push.apply(results,document.getElementsByClassName(className));
 		}else {
 			//否则获取全部标签并判断className是否相同
 			jqc.each(context.getElementsByTagName("*"),function(){

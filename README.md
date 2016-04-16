@@ -1,1 +1,1 @@
-一个模拟JQuery的框架，暂时命名为jqc，取JQuery copy之意。
+一个模拟JQuery的框架，暂时命名为jqc，取JQuery copy之意。相关代码解析请看博客：[模仿jQuery实现框架雏形](http://www.cnblogs.com/LandMine/p/5392909.html)
